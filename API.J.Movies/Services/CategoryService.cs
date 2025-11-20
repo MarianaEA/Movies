@@ -53,9 +53,18 @@ namespace API.J.Movies.Services
             return _mapper.Map<CategoryDto>(category);
         }
 
-        public Task<bool> DeleteCategoryAsync(int id)
+        public async Task<bool> DeleteCategoryAsync(int id)
         {
-            throw new NotImplementedException();
+            await GetCategoryByIdAsync(id);
+
+            var isDeleted = await _categoryRepository.DeleteCategoryAsync(id);
+
+            if (!isDeleted)
+            {
+                throw new Exception("Ocurrió un error al eliminar la categoría.");
+            }
+
+            return isDeleted;
         }
 
         public async Task<ICollection<CategoryDto>> GetCategoriesAsync()
