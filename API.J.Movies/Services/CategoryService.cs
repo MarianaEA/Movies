@@ -28,9 +28,29 @@ namespace API.J.Movies.Services
             throw new NotImplementedException();
         }
 
-        public Task<CategoryDto> CreateCategoryAsync(CategoryCreateDto categoryDto)
+        public async Task<CategoryDto> CreateCategoryAsync(CategoryCreateDto categoryCreateDto)
         {
-            throw new NotImplementedException();
+            //Validar si la categoría ya existe
+            var categoryExists = await _categoryRepository.CategoryExistsByNameAsync(categoryCreateDto.Name);
+
+            if (categoryExists)
+            {
+                throw new InvalidOperationException($"Ya existe una categoría con el nombre de '{categoryCreateDto.Name}'");
+            }
+
+            //Mapear el DTO a la entidad
+            var category = _mapper.Map<Category>(categoryCreateDto);
+
+            //Crear la categoría en el repositorio
+            var categoryCreated = await _categoryRepository.CreateCategoryAsync(category);
+
+            if (!categoryCreated)
+            {
+                throw new Exception("Ocurrió un error al crear la categoría.");
+            }
+
+            //Mapear la entidad creada a DTO
+            return _mapper.Map<CategoryDto>(category);
         }
 
         public Task<bool> DeleteCategoryAsync(int id)
@@ -47,9 +67,18 @@ namespace API.J.Movies.Services
             return _mapper.Map<ICollection<CategoryDto>>(categories);
         }
 
-        public Task<CategoryDto> GetCategoryAsync(int id)
+        public async Task<CategoryDto> GetCategoryAsync(int id)
         {
-            throw new NotImplementedException();
+            // Obtener la categoría del repositorio
+            var category = await _categoryRepository.GetCategoryAsync(id);
+
+            if (category == null)
+            {
+                throw new InvalidOperationException($"No se encontró la categoría con ID: '{id}'");
+            }
+
+            // Mapear toda la colección de una vez
+            return _mapper.Map<CategoryDto>(category);
         }
 
         public Task<CategoryDto> UpdateCategoryAsync(int id, Category categoryDto)
