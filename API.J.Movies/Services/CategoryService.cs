@@ -28,7 +28,7 @@ namespace API.J.Movies.Services
             throw new NotImplementedException();
         }
 
-        public async Task<CategoryDto> CreateCategoryAsync(CategoryCreateDto categoryCreateDto)
+        public async Task<CategoryDto> CreateCategoryAsync(CategoryCreateUpdateDto categoryCreateDto)
         {
             //Validar si la categoría ya existe
             var categoryExists = await _categoryRepository.CategoryExistsByNameAsync(categoryCreateDto.Name);
@@ -70,6 +70,40 @@ namespace API.J.Movies.Services
         public async Task<CategoryDto> GetCategoryAsync(int id)
         {
             // Obtener la categoría del repositorio
+            var category = await GetCategoryByIdAsync(id);
+
+            // Mapear toda la colección de una vez
+            return _mapper.Map<CategoryDto>(category);
+        }
+
+        public async Task<CategoryDto> UpdateCategoryAsync(CategoryCreateUpdateDto dto, int id)
+        {
+            //Verificar si la categoría existe
+            var existingCategory = await GetCategoryByIdAsync(id);
+
+            var nameExists = await _categoryRepository.CategoryExistsByNameAsync(dto.Name);
+            if (nameExists)
+            {
+                throw new InvalidOperationException($"Ya existe una categoría con el nombre de '{dto.Name}'");
+            }
+
+            //Mapear los cambios del DTO a la entidad existente Category
+            _mapper.Map(dto, existingCategory);
+
+            //Actualizar la categoría en el repositorio
+            var isUpdated = await _categoryRepository.UpdateCategoryAsync(existingCategory);
+
+            if (!isUpdated)
+            {
+                throw new Exception("Ocurrió un error al actualizar la categoría.");
+            }
+
+            //retornar el CategoryDto actualizado
+            return _mapper.Map<CategoryDto>(existingCategory);
+        }
+
+        private async Task<Category> GetCategoryByIdAsync(int id)
+        {
             var category = await _categoryRepository.GetCategoryAsync(id);
 
             if (category == null)
@@ -77,13 +111,7 @@ namespace API.J.Movies.Services
                 throw new InvalidOperationException($"No se encontró la categoría con ID: '{id}'");
             }
 
-            // Mapear toda la colección de una vez
-            return _mapper.Map<CategoryDto>(category);
-        }
-
-        public Task<CategoryDto> UpdateCategoryAsync(int id, Category categoryDto)
-        {
-            throw new NotImplementedException();
+            return category;
         }
     }
 }
