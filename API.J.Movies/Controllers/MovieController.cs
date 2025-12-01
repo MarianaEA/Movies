@@ -4,15 +4,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.J.Movies.Controllers
 {
-    public class MovieController
-    {
+   
+  
         [Route("api/[controller]")]
         [ApiController]
-        public class MoviesController : ControllerBase
+        public class MovieController : ControllerBase
         {
             private readonly IMovieService _movieService;
 
-            public MoviesController(IMovieService movieService)
+            public MovieController(IMovieService movieService)
             {
                 _movieService = movieService;
             }
@@ -77,5 +77,5 @@ namespace API.J.Movies.Controllers
                 }
             }
         }
-    }
+    
 }
